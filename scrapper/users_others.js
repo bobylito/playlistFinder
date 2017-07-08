@@ -12,4 +12,5 @@ module.exports = [
   'rsedit',
   'sfjazz_playlists',
   'thegrammys',
+  '1236033088', // laurie chambers
 ]
