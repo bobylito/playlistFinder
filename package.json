@@ -3,9 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "publish": "gh-pages -d web"
+  },
   "dependencies": {
     "algoliasearch": "^3.20.2",
     "lodash": "^4.17.3",
     "spotify-web-api-node": "^2.3.6"
+  },
+  "repository": "git@github.com:bobylito/playlistFinder.git",
+  "author": "Alexandre Stanislawski <alexandre.stanislawski@algolia.com>",
+  "devDependencies": {
+    "gh-pages": "^1.0.0"
   }
 }
