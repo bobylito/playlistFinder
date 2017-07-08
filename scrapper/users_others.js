@@ -13,4 +13,7 @@ module.exports = [
   'sfjazz_playlists',
   'thegrammys',
   '1236033088', // laurie chambers
+  '115924585', // Kristian Paskert
+  'music_feed',
+  'alxduo',
 ]
