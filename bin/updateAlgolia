@@ -1,0 +1,6 @@
+#! /bin/sh
+
+cd scrapper/
+
+node index.js
+node upload.js

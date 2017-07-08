@@ -1,0 +1,11 @@
+{
+  "name": "spotifyPlaylistFinder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "algoliasearch": "^3.20.2",
+    "lodash": "^4.17.3",
+    "spotify-web-api-node": "^2.3.6"
+  }
+}
