@@ -10,7 +10,6 @@
   },
   "scripts": {
     "dev": "browser-sync start --server . --files 'style.css,app.js,img/*,index.html' --no-open",
-    "lint": "eslint app.js --quiet",
     "test": "npm run lint"
   },
   "homepage": "https://github.com/algolia/instant-search-demo#readme",

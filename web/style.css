@@ -24,10 +24,7 @@ main {
   width: 23%;
 }
 #right-column {
-  /*
-  width: 74%;
-  margin-left: 26%;
-  */
+  position: relative;
 }
 
 .clear:after {
@@ -40,6 +37,7 @@ main {
 header {
   position: relative;
   height: 100px;
+  z-index: 100;
 }
 
 header .logo{
@@ -444,12 +442,21 @@ a.clear-all:hover {
   border-color: #ed5565;
 }
 
+.ais-infinite-hits--showmore {
+  padding-top: 50px;
+}
+
 /* FOOTER */
 footer {
   font-size: 14px;
-  margin-top: 200px;
-  margin-bottom: 24px;
+  margin: 50px 0 0 0;
+  padding: 50px 0;
   text-align: center;
+  background: #000;
+  color: #fff;
+  width: 100%;
+  max-width: 100%;
+  line-height: 28px;
 }
 footer a {
   text-decoration: none;
@@ -484,4 +491,11 @@ footer a:hover {
 
 .btn-main-action.visible {
   transform: scale(1);
+}
+
+.ais-search-box--powered-by {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: .5em;
 }
