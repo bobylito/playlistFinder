@@ -6,6 +6,10 @@
   "scripts": {
     "publish": "gh-pages -d web"
   },
+  "homepage": "https://playlist-finder.netlify.com",
+  "bugs": {
+    "url": "https://github.com/bobylito/playlistFinder/issues"
+  },
   "dependencies": {
     "algoliasearch": "^3.20.2",
     "lodash": "^4.17.3",

@@ -31,6 +31,9 @@ function app(opts) {
         protocol: 'https:'
       });
     },
+    urlSync: {
+      trackedParameters: ['query']
+    },
   });
 
   search.addWidget(
