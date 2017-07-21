@@ -23,7 +23,7 @@ var totalPlaylists = 0;
 (function fetchNextUser(users) {
   // console.log('Fetching playlists of ' + users.length + ' users');
   if(users.length === 0) {
-    console.log(`Scrapping ended 💪: fetched ${} playlists of ${rawusers.length} users}`);
+    console.log(`Scrapping ended 💪: fetched ${totalPlaylists} playlists of ${rawusers.length} users}`);
     return;
   }
   var head = headƒ(users);
