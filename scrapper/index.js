@@ -17,19 +17,23 @@ try {
   fs.mkdir('playlists');
 } catch(e) { /* ignore */ }
 
-var users = require('./users.js');
+var rawusers = require('./users.js');
+var totalPlaylists = 0;
 
 (function fetchNextUser(users) {
-  console.log('Fetching playlists of ' + users.length + ' users');
-  if(users.length === 0) return;
+  // console.log('Fetching playlists of ' + users.length + ' users');
+  if(users.length === 0) {
+    console.log(`Scrapping ended 💪: fetched ${} playlists of ${rawusers.length} users}`);
+    return;
+  }
   var head = headƒ(users);
   scrapUserPlaylists(head).then(function() {
     fetchNextUser(tailƒ(users));
   });
-})(users)
+})(rawusers)
 
 function scrapUserPlaylists(user) {
-  console.log("Fetching playlists for: " + user);
+  // console.log("Fetching playlists for: " + user);
   return spotifyApi.clientCredentialsGrant()
     .then(function(data) {
       console.log('The access token expires in ' + data.body['expires_in']);
@@ -41,6 +45,7 @@ function scrapUserPlaylists(user) {
         .then(getPlaylistFollowers);
     }).then(function(pl) {
       fs.writeFileSync('playlists/' + user + '.json', JSON.stringify(pl, null, 2));
+      totalPlaylists += pl.length;
       console.log(pl.length + ' fetched playlists from ' + user);
     }, function(e) {
       console.error(e);
@@ -48,7 +53,7 @@ function scrapUserPlaylists(user) {
 }
 
 function getPlaylistFollowers(playlists, processedPlaylists) {
-  console.log('[Followers] Playlist remaining to process: ', playlists.length);
+  // console.log('[Followers] Playlist remaining to process: ', playlists.length);
   var newProcessedPlaylists = processedPlaylists || [];
   if(playlists.length === 0) return newProcessedPlaylists;
 
@@ -72,7 +77,7 @@ function getPlaylistFollowers(playlists, processedPlaylists) {
 }
 
 function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
-  console.log('[songs and artists] Playlist remaining to process: ', playlists.length);
+  // console.log('[songs and artists] Playlist remaining to process: ', playlists.length);
   var newProcessedPlaylists = processedPlaylists || [];
   if(playlists.length === 0) return newProcessedPlaylists;
 
