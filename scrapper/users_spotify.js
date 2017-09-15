@@ -1,5 +1,5 @@
 module.exports = [
-  "thesoundsofspotify",
+  // "thesoundsofspotify",
   "spotify",
   "spotifyspotlight",
   "spotifysessions",
