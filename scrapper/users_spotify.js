@@ -1,4 +1,5 @@
 module.exports = [
+  "thesoundsofspotify",
   "spotify",
   "spotifyspotlight",
   "spotifysessions",
