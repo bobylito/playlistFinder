@@ -10,7 +10,8 @@
     });
   });
   window.addEventListener('scroll', () => {
-    const scroll = document.body.scrollTop;
+    const scrollNode = document.scrollingElement || document.documentElement;
+    const scroll = scrollNode.scrollTop;
     if(scroll > 100) {
       btn.classList.add('visible');
     }

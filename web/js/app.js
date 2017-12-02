@@ -97,15 +97,6 @@ function app(opts) {
 
   search.start();
 
-  var currentSearches = 1;
-  search.helper.on('search', function() {
-    document.body.classList.toggle('is-searching', true);
-  });
-
-  search.helper.on('searchQueueEmpty', function() {
-    document.body.classList.remove('is-searching');
-  });
-
   var buttons = [].slice.call(document.querySelectorAll('.filter-menu'));
   var allMenus = buttons.map(function(btn) {
     var target = btn.dataset['for'];
