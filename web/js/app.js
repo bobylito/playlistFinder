@@ -39,7 +39,8 @@ function app(opts) {
   search.addWidget(
     instantsearch.widgets.searchBox({
       container: '#search-input',
-      placeholder: 'Search for a playlist'
+      placeholder: 'Search for a playlist',
+      loadingIndicator: true
     })
   );
 
