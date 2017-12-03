@@ -1,6 +1,7 @@
 var CACHE_NAME = 'PlaylistFinder-cache';
 var urlsToCache = [
   '/',
+  '/index.html',
   '/style.css',
   '/js/app.js',
   '/js/button.js'
