@@ -16,4 +16,5 @@ module.exports = [
   '115924585', // Kristian Paskert
   'music_feed',
   'alxduo',
+  'kosai106', // Kevin Østerkilde
 ]
