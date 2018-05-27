@@ -17,7 +17,7 @@ try {
   fs.mkdir('playlists');
 } catch(e) { /* ignore */ }
 
-var rawusers = require('./users.js');
+var rawusers = require('../data/users.json');
 var totalPlaylists = 0;
 
 (function fetchNextUser(users) {

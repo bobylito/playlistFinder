@@ -4,7 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "publish": "gh-pages -d web"
+    "publish": "gh-pages -d web",
+    "list-curators": "node ./bin/database-cli.js list",
+    "add-curator": "node ./bin/database-cli.js add",
+    "rm-curator": "node ./bin/database-cli.js remove",
+    "reset-curators": "node ./bin/database-cli.js reset"
   },
   "homepage": "https://playlist-finder.netlify.com",
   "bugs": {
@@ -12,8 +16,10 @@
   },
   "dependencies": {
     "algoliasearch": "^3.20.2",
+    "knex": "^0.14.2",
     "lodash": "^4.17.3",
-    "spotify-web-api-node": "^2.3.6"
+    "spotify-web-api-node": "^2.3.6",
+    "sqlite3": "^3.1.13"
   },
   "repository": "git@github.com:bobylito/playlistFinder.git",
   "author": "Alexandre Stanislawski <alexandre.stanislawski@algolia.com>",
