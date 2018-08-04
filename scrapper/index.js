@@ -14,7 +14,7 @@ var spotifyApi = new SpotifyWebApi({
 
 // create playlists folder
 try {
-  fs.mkdir('playlists');
+  fs.mkdirSync('playlists');
 } catch(e) { /* ignore */ }
 
 var rawusers = require('../data/users.json');
