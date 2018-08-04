@@ -10,14 +10,18 @@ html {
 body {
   margin: 0;
   max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 header, main, #no-results, footer {
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 main {
-  min-height: 360px;
+  flex: 1;
 }
 #left-column {
   display: none;
