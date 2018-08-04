@@ -21,10 +21,17 @@ switch(command) {
     if(command === 'add') addUser(userID);
     else removeUser(userID);
     break;
+  case 'import':
+    process.stdin.pipe(require('split')()).on('data', processLine)
+
+    function processLine (line) {
+      addUser(line);
+    }
+    break;
   case 'reset':
     resetList();
     break;
-  default: 
+  default:
     console.error('Unknown command');
     process.exit(3);
 }
