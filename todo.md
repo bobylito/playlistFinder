@@ -2,15 +2,13 @@
 
 ## CLI
 
-Manage data using a file database and use a CLI to manage it.
+Manage curators using a CLI
 
  - [x] Add curator
  - [x] Remove curator
  - [x] List curator
- - [ ] Use new curator list in scrapper
- - [ ] Initial spotify scrape
- - [ ] Incremental spotify scrape
- - [ ] Update playlist DB to Algolia
+ - [x] Use new curator list in scrapper
+-  [x] Batch import of curators
 
 ## Web
 
