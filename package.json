@@ -17,11 +17,9 @@
   },
   "dependencies": {
     "algoliasearch": "^3.20.2",
-    "knex": "^0.14.2",
     "lodash": "^4.17.3",
     "split": "^1.0.1",
-    "spotify-web-api-node": "^2.3.6",
-    "sqlite3": "^3.1.13"
+    "spotify-web-api-node": "^2.3.6"
   },
   "repository": "git@github.com:bobylito/playlistFinder.git",
   "author": "Alexandre Stanislawski <alexandre.stanislawski@algolia.com>",
