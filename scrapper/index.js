@@ -65,15 +65,12 @@ function getPlaylistFollowers(playlists, processedPlaylists) {
       head.description = infos.description || '';
       newProcessedPlaylists.push(head);
       return getPlaylistFollowers(tailƒ(playlists), newProcessedPlaylists);
-    }, function(e) {
-      console.log(e);
-      console.log('Error fetching followers and metadata - retrying in 10s');
-      return new Promise(function(resolve) {
-        setTimeout(function() {
-          resolve(getPlaylistFollowers(playlists, processedPlaylists));
-        }, 10000);
-      });
-    });
+    }, (e) => handleSpotifyAPIError(
+      () => getPlaylistFollowers(playlists, processedPlaylists),
+      () => getPlaylistFollowers(tailƒ(playlists), processedPlaylists),
+      e
+    )
+  );
 }
 
 function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
@@ -88,21 +85,12 @@ function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
       head.artists = songsAndArtists.artists;
       newProcessedPlaylists.push(head);
       return getSongsAndArtistsForPlaylists(tailƒ(playlists), newProcessedPlaylists);
-    }, function(e) {
-      console.log(e);
-      if(e.statusCode === 404) {
-        console.log('Error fetching song - Not found - skip');
-        return getSongsAndArtistsForPlaylists(tailƒ(playlists), processedPlaylists);
-      }
-      else {
-        console.log('Error fetching songs - retrying in 10s');
-        return new Promise(function(resolve) {
-          setTimeout(function() {
-            resolve(getSongsAndArtistsForPlaylists(playlists, processedPlaylists));
-          }, 10000);
-        });
-      }
-    });
+    }, (e) => handleSpotifyAPIError(
+      () => getSongsAndArtistsForPlaylists(playlists, processedPlaylists),
+      () => getSongsAndArtistsForPlaylists(tailƒ(playlists), processedPlaylists),
+      e
+    )
+  );
 }
 
 function getSongsAndArtists(pl, previousTracks, end) {
@@ -116,7 +104,12 @@ function getSongsAndArtists(pl, previousTracks, end) {
       var items = tracks.concat(body.items);
       if(body.next) return getSongsAndArtists(pl, items);
       else return getSongsAndArtists(pl, items, true);
-    });
+    }, (e) => handleSpotifyAPIError(
+      () => getSongsAndArtists(pl, previousTracks, end),
+      () => getSongsAndArtists(pl, previousTracks, end, true),
+      e
+    )
+  );
 }
 
 function processSongsAndArtists(tracks) {
@@ -148,15 +141,12 @@ function getAllPlaylists(userID, previousPlaylists, end) {
     var body = response.body;
     if(body.next) return getAllPlaylists(userID, playlists.concat(body.items));
     else return getAllPlaylists(userID, playlists.concat(body.items), true);
-  }, function(e) {
-    console.log(e);
-    console.log('Failed to fetch playlist for ' + userID + ' - retrying in 10s');
-    return new Promise(function(resolve) {
-      setTimeout(function() {
-        resolve(getAllPlaylists(userID, previousPlaylists));
-      }, 10000);
-    });
-  });
+  }, (e) => handleSpotifyAPIError(
+      () => getAllPlaylists(userID, previousPlaylists),
+      () => getAllPlaylists(userID, previousPlaylists, true), // why would it fail??
+      e
+    )
+  );
 }
 
 function processPlaylists(pls) {
@@ -174,4 +164,20 @@ function processPlaylists(pls) {
       href: pl['external_urls'].spotify
     };
   });
+}
+
+function handleSpotifyAPIError(functionRetry, functionSkip, e) {
+  console.log(e);
+  if(e.statusCode === 429) {
+    console.log('Error fetching data - retrying in 10s');
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        resolve(functionRetry());
+      }, 10000);
+    });
+  }
+  else {
+    console.log(`Error fetching data - other error (${e.statusCode}) - skipping`);
+    return functionSkip();
+  }
 }
