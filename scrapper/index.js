@@ -172,6 +172,14 @@ function handleSpotifyAPIError(functionRetry, functionSkip, e, callCtx) {
         resolve(functionRetry());
       }, 10000);
     });
+  } else if(e.statusCode === 401) {
+    console.log('Access token expired');
+    return spotifyApi.clientCredentialsGrant()
+      .then(function(data) {
+        console.log('The access token expires in ' + data.body['expires_in']);
+        spotifyApi.setAccessToken(data.body['access_token']);
+        return functionRetry();
+      })
   } else {
     console.log(`Error fetching data - other error (${e.statusCode}) - ${callCtx} - skipping`);
     return functionSkip();
