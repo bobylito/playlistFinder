@@ -21,7 +21,6 @@ var rawusers = require('../data/users.json');
 var totalPlaylists = 0;
 
 (function fetchNextUser(users) {
-  // console.log('Fetching playlists of ' + users.length + ' users');
   if(users.length === 0) {
     console.log(`Scrapping ended 💪: fetched ${totalPlaylists} playlists of ${rawusers.length} users}`);
     return;
@@ -33,11 +32,9 @@ var totalPlaylists = 0;
 })(rawusers)
 
 function scrapUserPlaylists(user) {
-  // console.log("Fetching playlists for: " + user);
   return spotifyApi.clientCredentialsGrant()
     .then(function(data) {
       console.log('The access token expires in ' + data.body['expires_in']);
-      console.log('The access token is ' + data.body['access_token']);
       spotifyApi.setAccessToken(data.body['access_token']);
 
       return getAllPlaylists(user)
@@ -53,7 +50,6 @@ function scrapUserPlaylists(user) {
 }
 
 function getPlaylistFollowers(playlists, processedPlaylists) {
-  // console.log('[Followers] Playlist remaining to process: ', playlists.length);
   var newProcessedPlaylists = processedPlaylists || [];
   if(playlists.length === 0) return newProcessedPlaylists;
 
@@ -68,13 +64,13 @@ function getPlaylistFollowers(playlists, processedPlaylists) {
     }, (e) => handleSpotifyAPIError(
       () => getPlaylistFollowers(playlists, processedPlaylists),
       () => getPlaylistFollowers(tailƒ(playlists), processedPlaylists),
-      e
+      e,
+      `playlist followers for ${head.name} from ${head.owner}`,
     )
   );
 }
 
 function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
-  // console.log('[songs and artists] Playlist remaining to process: ', playlists.length);
   var newProcessedPlaylists = processedPlaylists || [];
   if(playlists.length === 0) return newProcessedPlaylists;
 
@@ -88,7 +84,8 @@ function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
     }, (e) => handleSpotifyAPIError(
       () => getSongsAndArtistsForPlaylists(playlists, processedPlaylists),
       () => getSongsAndArtistsForPlaylists(tailƒ(playlists), processedPlaylists),
-      e
+      e,
+      `songs and artists for ${head.name} from ${head.owner}`,
     )
   );
 }
@@ -100,14 +97,14 @@ function getSongsAndArtists(pl, previousTracks, end) {
   return spotifyApi.getPlaylistTracks(pl.owner, pl.id, {fields: 'items(track(name,album(name),artists(name)))'})
     .then(function(response) {
       var body = response.body;
-      //console.log(pl, tracks);
       var items = tracks.concat(body.items);
       if(body.next) return getSongsAndArtists(pl, items);
       else return getSongsAndArtists(pl, items, true);
     }, (e) => handleSpotifyAPIError(
       () => getSongsAndArtists(pl, previousTracks, end),
       () => getSongsAndArtists(pl, previousTracks, end, true),
-      e
+      e,
+      `songs and artists (browsing tracks) for ${pl.name} from ${pl.owner}`,
     )
   );
 }
@@ -144,7 +141,8 @@ function getAllPlaylists(userID, previousPlaylists, end) {
   }, (e) => handleSpotifyAPIError(
       () => getAllPlaylists(userID, previousPlaylists),
       () => getAllPlaylists(userID, previousPlaylists, true), // why would it fail??
-      e
+      e,
+      `user playlists from ${userID}`,
     )
   );
 }
@@ -166,18 +164,16 @@ function processPlaylists(pls) {
   });
 }
 
-function handleSpotifyAPIError(functionRetry, functionSkip, e) {
-  console.log(e);
+function handleSpotifyAPIError(functionRetry, functionSkip, e, callCtx) {
   if(e.statusCode === 429) {
-    console.log('Error fetching data - retrying in 10s');
+    console.log(`Error fetching data - rate limit - ${callCtx} - retrying in 10s`);
     return new Promise(function(resolve) {
       setTimeout(function() {
         resolve(functionRetry());
       }, 10000);
     });
-  }
-  else {
-    console.log(`Error fetching data - other error (${e.statusCode}) - skipping`);
+  } else {
+    console.log(`Error fetching data - other error (${e.statusCode}) - ${callCtx} - skipping`);
     return functionSkip();
   }
 }
