@@ -17,7 +17,16 @@ try {
   fs.mkdirSync('playlists');
 } catch(e) { /* ignore */ }
 
-var rawusers = require('../data/users.json');
+var commandLineUser = process.argv[2];
+
+var rawusers;
+if(commandLineUser) {
+  console.log(`user "${commandLineUser}" provided directly - forcing single user processing`);
+  rawusers = [commandLineUser];
+} else {
+  rawusers = require('../data/users.json');
+}
+
 var totalPlaylists = 0;
 
 (function fetchNextUser(users) {
@@ -101,8 +110,8 @@ function getSongsAndArtists(pl, previousTracks, end) {
       if(body.next) return getSongsAndArtists(pl, items);
       else return getSongsAndArtists(pl, items, true);
     }, (e) => handleSpotifyAPIError(
-      () => getSongsAndArtists(pl, previousTracks, end),
-      () => getSongsAndArtists(pl, previousTracks, end, true),
+      () => getSongsAndArtists(pl, previousTracks),
+      () => getSongsAndArtists(pl, previousTracks, true),
       e,
       `songs and artists (browsing tracks) for ${pl.name} from ${pl.owner}`,
     )
