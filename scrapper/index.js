@@ -1,7 +1,12 @@
 var fs = require('fs');
+var process = require('process');
 var SpotifyWebApi = require('spotify-web-api-node');
 var headƒ = require('lodash/head');
 var tailƒ = require('lodash/tail');
+
+const {connectToDB, closeDB, writePlaylist, getPlaylist} = require('./lib/playlists');
+
+const maybeDB = connectToDB();
 
 if(!process.env.SPOTIFY_ID) throw new Error('SPOTIFY_ID must be defined');
 if(!process.env.SPOTIFY_SECRET) throw new Error('SPOTIFY_SECRET must be defined');
@@ -10,11 +15,6 @@ var spotifyApi = new SpotifyWebApi({
   clientId : process.env.SPOTIFY_ID,
   clientSecret : process.env.SPOTIFY_SECRET,
 });
-
-// create playlists folder
-try {
-  fs.mkdirSync('playlists');
-} catch(e) { /* ignore if it exists */ }
 
 var commandLineUser = process.argv[2];
 
@@ -28,13 +28,23 @@ if(commandLineUser) {
 
 // stats
 var totalPlaylists = 0;
+const stats = {
+  new: [],
+  updated: [],
+  notUpdated: [],
+};
 
 // 0 - going through the list of curator one by one
 
-(function fetchNextUser(users) {
+(async function fetchNextUser(users) {
   if(users.length === 0) {
-    console.log(`Scrapping ended 💪: fetched ${totalPlaylists} playlists of ${rawusers.length} users}`);
-    return;
+    console.log(`Scrapping ended:
+     - fetched ${totalPlaylists} playlists of ${rawusers.length} users}
+     - ${stats.new.length} new playlists
+     - ${stats.updated.length} updated playlists
+     - ${stats.notUpdated.length} not updated`);
+    closeDB(await maybeDB);
+    process.exit(0);
   }
   var head = headƒ(users);
   scrapUserPlaylists(head).then(function() {
@@ -51,10 +61,11 @@ function scrapUserPlaylists(user) {
       spotifyApi.setAccessToken(data.body['access_token']);
 
       return getAllPlaylists(user)
+        .then(filterNonUpdatedPlaylists)
         .then(getSongsAndArtistsForPlaylists)
-        .then(getPlaylistFollowers);
+        .then(getPlaylistFollowers)
+        .then(writePlaylists);
     }).then(function(pl) {
-      fs.writeFileSync('playlists/' + user + '.json', JSON.stringify(pl, null, 2));
       totalPlaylists += pl.length;
       console.log(pl.length + ' fetched playlists from ' + user);
     }, function(e) {
@@ -98,12 +109,38 @@ function processPlaylists(pls) {
       followers: 0,
       songs: [],
       artists: [],
-      href: pl['external_urls'].spotify
+      href: pl['external_urls'].spotify,
+      snapshotId: pl['snapshot_id']
     };
   });
 }
 
-// 3 - Iterates over the user's playlists to add the songs and artists
+// 3 - Filter out playlists that are not updated (we keep the new and updated playlists)
+
+/**
+ * Go through a list of playlists and keep only the playlists that requires a complete update.
+ * @param {Array<Object>} playlists 
+ * @returns {Array<Object>}
+ */
+async function filterNonUpdatedPlaylists(playlists) {
+  const newOrUpdatedPlaylists = [];
+  for(let pl of playlists) {
+    const db = await maybeDB;
+    const playlistFromDB = await getPlaylist(db, pl.id);
+    if(playlistFromDB && playlistFromDB.snapshotId !== pl.snapshotId) {
+      newOrUpdatedPlaylists.push(pl);
+      stats.updated.push(pl.id);
+    } else if (!playlistFromDB) {
+      newOrUpdatedPlaylists.push(pl);
+      stats.new.push(pl.id);
+    } else {
+      stats.notUpdated.push(pl.id);
+    }
+  }
+  return newOrUpdatedPlaylists;
+}
+
+// 4 - Iterates over the user's playlists to add the songs and artists
 
 function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
   var newProcessedPlaylists = processedPlaylists || [];
@@ -125,7 +162,7 @@ function getSongsAndArtistsForPlaylists(playlists, processedPlaylists) {
   );
 }
 
-// 4 - Get songs and artists for a single playlist
+// 5 - Get songs and artists for a single playlist
 
 function getSongsAndArtists(pl, previousTracks, end) {
   if(end) return Promise.resolve(processSongsAndArtists(previousTracks));
@@ -146,7 +183,7 @@ function getSongsAndArtists(pl, previousTracks, end) {
   );
 }
 
-// 5 - Transforms songs into a list of unique artists and songs
+// 6 - Transforms songs into a list of unique artists and songs
 
 function processSongsAndArtists(tracks) {
   var artists = {};
@@ -166,7 +203,7 @@ function processSongsAndArtists(tracks) {
   };
 }
 
-// 6 - Adds the description and number of followers to the playlists
+// 7 - Adds the description and number of followers to the playlists
 
 function getPlaylistFollowers(playlists, processedPlaylists) {
   var newProcessedPlaylists = processedPlaylists || [];
@@ -187,6 +224,16 @@ function getPlaylistFollowers(playlists, processedPlaylists) {
       `playlist followers for ${head.name} from ${head.owner}`,
     )
   );
+}
+
+// 8 - write playlists
+
+async function writePlaylists(playlists) {
+  const db = await maybeDB;
+  for(let pl of playlists) {
+    await writePlaylist(db, pl);
+  }
+  return playlists;
 }
 
 /**

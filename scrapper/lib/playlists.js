@@ -11,7 +11,8 @@ module.exports = {
   connectToDB,
   deduplicatePlaylists,
   readAllPlaylists,
-  writePlaylist
+  writePlaylist,
+  getPlaylist,
 };
 
 async function readAllPlaylists() {
@@ -80,8 +81,17 @@ async function closeDB(db) {
 async function writePlaylist(db, playlist) {
   const collection = await db.collection(collectionName);
   try {
-    await collection.insertOne(playlist);
+    await collection.updateOne({id: playlist.id}, {$set: playlist}, {upsert: true});
   } catch(e) {
     console.error(`Failed to insert ${playlist.id}`);
+    console.error(e);
   }
+}
+
+async function getPlaylist(db, playlistId) {
+  const collection = await db.collection(collectionName)
+  const playlist = await collection.find({
+    id: playlistId
+  }).toArray();
+  return playlist[0];
 }
