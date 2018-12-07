@@ -13,6 +13,7 @@ module.exports = {
   readAllPlaylists,
   writePlaylist,
   getPlaylist,
+  getAllPlaylists,
 };
 
 async function readAllPlaylists() {
@@ -94,4 +95,20 @@ async function getPlaylist(db, playlistId) {
     id: playlistId
   }).toArray();
   return playlist[0];
+}
+
+async function* getAllPlaylists(db){
+  const collection = await db.collection(collectionName)
+  const playlistCursor = await collection.find({}).batchSize(10000);
+  let nextPlaylist = await playlistCursor.next();
+  let out = [];
+  while(nextPlaylist) {
+    if(out.length === 10000) {
+      yield out;
+      out = [];
+    }
+    out.push(nextPlaylist);
+    nextPlaylist = await playlistCursor.next();
+  }
+  yield out;
 }
