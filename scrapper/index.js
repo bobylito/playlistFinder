@@ -29,6 +29,8 @@ if(commandLineUser) {
 // stats
 var totalPlaylists = 0;
 const stats = {
+  start: Date.now(),
+  end: undefined,
   new: [],
   updated: [],
   notUpdated: [],
@@ -38,7 +40,12 @@ const stats = {
 
 (async function fetchNextUser(users) {
   if(users.length === 0) {
-    console.log(`Scrapping ended:
+    stats.end = Date.now();
+    const deltaT = (stats.end - stats.start) / 1000;
+    const deltaMinutes = deltaT / 60;
+    const deltaSeconds = deltaT % 60;
+    console.log(`Scrapping ended in ${deltaMinutes} min. ${deltaSeconds} sec.
+Summary:
      - fetched ${totalPlaylists} playlists of ${rawusers.length} users}
      - ${stats.new.length} new playlists
      - ${stats.updated.length} updated playlists
