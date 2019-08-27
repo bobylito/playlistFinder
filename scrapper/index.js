@@ -6,6 +6,8 @@ var tailƒ = require('lodash/tail');
 
 const {connectToDB, closeDB, writePlaylist, getPlaylist} = require('./lib/playlists');
 
+console.log('Playlist detective 🕵️ started!');
+
 const maybeDB = connectToDB();
 
 if(!process.env.SPOTIFY_ID) throw new Error('SPOTIFY_ID must be defined');
@@ -23,7 +25,9 @@ if(commandLineUser) {
   console.log(`user "${commandLineUser}" provided directly - forcing single user processing`);
   rawusers = [commandLineUser];
 } else {
+  console.log('Using curators list defined in `data/users.json`');
   rawusers = require('../data/users.json');
+  console.log(`Reading playlists of ${rawusers.length} users`);
 }
 
 // stats
@@ -42,7 +46,7 @@ const stats = {
   if(users.length === 0) {
     stats.end = Date.now();
     const deltaT = (stats.end - stats.start) / 1000;
-    const deltaMinutes = deltaT / 60;
+    const deltaMinutes = Math.floor(deltaT / 60);
     const deltaSeconds = deltaT % 60;
     console.log(`Scrapping ended in ${deltaMinutes} min. ${deltaSeconds} sec.
 Summary:
