@@ -1,10 +1,10 @@
-const path = require("path");
-const promisify = require("util").promisify;
-const readdir = promisify(require("fs").readdir);
-const readFile = promisify(require("fs").readFile);
-const MongoClient = require("mongodb").MongoClient;
+const path = require('path');
+const promisify = require('util').promisify;
+const readdir = promisify(require('fs').readdir);
+const readFile = promisify(require('fs').readFile);
+const MongoClient = require('mongodb').MongoClient;
 
-const FOLDER = path.join("playlists");
+const FOLDER = path.join('playlists');
 
 module.exports = {
   closeDB,
@@ -51,23 +51,20 @@ function getPlaylistsOwners(playlists) {
     playlists.reduce((memo, pl) => {
       memo[pl.owner] = true;
       return memo;
-    }, {})
+    }, {}),
   );
 }
 
 // MONGODB CONFIG -- START
-const url = "mongodb://localhost:27017";
-const dbName = "playlistFinder";
-const collectionName = "playlists";
+const url = 'mongodb://localhost:27017';
+const dbName = 'playlistFinder';
+const collectionName = 'playlists';
 // MONGODB CONFIG -- END
 
 let client;
 async function connectToDB() {
   try {
-    client = await MongoClient.connect(
-      url,
-      { useNewUrlParser: true }
-    );
+    client = await MongoClient.connect(url, {useNewUrlParser: true});
     return client.db(dbName);
   } catch (e) {
     console.error(`Failed to connect to ${url}, ${dbName}`);
@@ -82,28 +79,46 @@ async function closeDB(db) {
 async function writePlaylist(db, playlist) {
   const collection = await db.collection(collectionName);
   try {
-    await collection.updateOne({id: playlist.id}, {$set: playlist}, {upsert: true});
-  } catch(e) {
+    await collection.updateOne(
+      {id: playlist.id},
+      {$set: playlist},
+      {upsert: true},
+    );
+  } catch (e) {
     console.error(`Failed to insert ${playlist.id}`);
     console.error(e);
   }
 }
 
+// async function deletePlaylists(db, playlists) {
+//   const collection = await db.collection(collectionName);
+//   try {
+//     await collection.findAndRemove({
+//       id: playlistId,
+//     });
+//   } catch (e) {
+//     console.error(`Failed to insert ${playlist.id}`);
+//     console.error(e);
+//   }
+// }
+
 async function getPlaylist(db, playlistId) {
-  const collection = await db.collection(collectionName)
-  const playlist = await collection.find({
-    id: playlistId
-  }).toArray();
+  const collection = await db.collection(collectionName);
+  const playlist = await collection
+    .find({
+      id: playlistId,
+    })
+    .toArray();
   return playlist[0];
 }
 
-async function* getAllPlaylists(db){
-  const collection = await db.collection(collectionName)
+async function* getAllPlaylists(db, batchSize = 10000) {
+  const collection = await db.collection(collectionName);
   const playlistCursor = await collection.find({}).batchSize(10000);
   let nextPlaylist = await playlistCursor.next();
   let out = [];
-  while(nextPlaylist) {
-    if(out.length === 10000) {
+  while (nextPlaylist) {
+    if (out.length === batchSize) {
       yield out;
       out = [];
     }
