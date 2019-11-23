@@ -9,6 +9,7 @@ const FOLDER = path.join('playlists');
 module.exports = {
   closeDB,
   connectToDB,
+  deletePlaylist,
   deduplicatePlaylists,
   readAllPlaylists,
   writePlaylist,
@@ -90,17 +91,17 @@ async function writePlaylist(db, playlist) {
   }
 }
 
-// async function deletePlaylists(db, playlists) {
-//   const collection = await db.collection(collectionName);
-//   try {
-//     await collection.findAndRemove({
-//       id: playlistId,
-//     });
-//   } catch (e) {
-//     console.error(`Failed to insert ${playlist.id}`);
-//     console.error(e);
-//   }
-// }
+async function deletePlaylist(db, playlistId) {
+  const collection = await db.collection(collectionName);
+  try {
+    await collection.findAndRemove({
+      id: playlistId,
+    });
+  } catch (e) {
+    console.error(`Failed to insert ${playlist.id}`);
+    console.error(e);
+  }
+}
 
 async function getPlaylist(db, playlistId) {
   const collection = await db.collection(collectionName);
@@ -114,7 +115,7 @@ async function getPlaylist(db, playlistId) {
 
 async function* getAllPlaylists(db, batchSize = 10000) {
   const collection = await db.collection(collectionName);
-  const playlistCursor = await collection.find({}).batchSize(10000);
+  const playlistCursor = await collection.find({}).batchSize(batchSize);
   let nextPlaylist = await playlistCursor.next();
   let out = [];
   while (nextPlaylist) {

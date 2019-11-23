@@ -3,7 +3,10 @@ const chalk = require('chalk');
 const {default: PQueue} = require('p-queue');
 const process = require('process');
 const blessed = require('blessed');
-const fs = require('fs');
+const {writeFile} = require('fs');
+const {promisify} = require('util');
+
+const write = promisify(writeFile);
 
 const {getAllPlaylists, connectToDB} = require('./lib/playlists');
 
@@ -38,6 +41,16 @@ const log = content => {
   screen.render();
 };
 
+const saveStats = ({unknown, dead}) => {
+  return write(
+    'out.json',
+    JSON.stringify({
+      dead,
+      unknown,
+    }),
+  );
+};
+
 async function cleanupDeadPlaylists() {
   updateStatus(`Reading playlists...`);
 
@@ -47,7 +60,7 @@ async function cleanupDeadPlaylists() {
   const dead = [];
   const unknown = [];
   const temp = [];
-  const queue = new PQueue({concurrency: 100});
+  const queue = new PQueue({concurrency: 5});
 
   let count = 0;
   queue.on('active', () => {
@@ -69,8 +82,8 @@ async function cleanupDeadPlaylists() {
 
   log(`Found ${playlists.length} playlists`);
 
-  playlists.forEach(pl => {
-    queue.add(async () => {
+  const createPlaylistCheckTask = pl => async () => {
+    try {
       const {status} = await axios.head(pl.href, {
         validateStatus: () => true,
       });
@@ -86,15 +99,23 @@ async function cleanupDeadPlaylists() {
         log(`${pl.name} - unknown`);
         unknown.push(pl.id);
       }
-    });
+
+      return saveStats({unknown, dead});
+    } catch (e) {
+      log(chalk.red.underline(`Error while reading ${pl.id}`));
+      log(JSON.stringify(e, null, 2));
+      log('Retrying');
+      queue.add(createPlaylistCheckTask(pl));
+    }
+  };
+
+  playlists.forEach(pl => {
+    queue.add(createPlaylistCheckTask(pl));
   });
 
   await queue.onIdle();
 
-  fs.writeFileSync('out.json', {
-    dead,
-    unknown,
-  });
+  await saveStats({unknown, dead});
 
   process.exit(0);
 }
