@@ -1,7 +1,0 @@
-<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
-  <ShortName>Playlist finder</ShortName>
-  <Description>Find spotify playlists with Algolia powers</Description>
-  <Url type="text/html" method="get" template="https://playlistdetective.com?q={searchTerms}"/>
-  <InputEncoding>UTF-8</InputEncoding>
-  <Image height="32" width="32" type="image/png">https://playlistdetective.com/img/touch/favicon.png</Image>
-</OpenSearchDescription>
